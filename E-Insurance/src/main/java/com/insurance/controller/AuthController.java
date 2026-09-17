@@ -1,5 +1,6 @@
 package com.insurance.controller;
 
+import com.insurance.dto.CustomerRegisterRequestDTO;
 import com.insurance.dto.LoginRequestDTO;
 import com.insurance.dto.LoginResponseDTO;
 import com.insurance.dto.RegisterRequestDTO;
@@ -18,21 +19,29 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(
-            @Valid @RequestBody LoginRequestDTO request) {
-
-        return ResponseEntity.ok(
-                authService.login(request)
-        );
-    }
-
     @PostMapping("/register")
     public ResponseEntity<String> register(
             @Valid @RequestBody RegisterRequestDTO request) {
 
         return ResponseEntity.ok(
                 authService.register(request)
+        );
+    }
+    @PostMapping("/register/customer")
+    public ResponseEntity<String> registerCustomer(
+            @Valid @RequestBody
+            CustomerRegisterRequestDTO request) {
+
+        return ResponseEntity.ok(
+                authService.registerCustomer(request)
+        );
+    }
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(
+            @Valid @RequestBody LoginRequestDTO request) {
+
+        return ResponseEntity.ok(
+                authService.login(request)
         );
     }
 }

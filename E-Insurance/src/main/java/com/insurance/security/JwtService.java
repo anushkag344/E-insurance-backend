@@ -16,21 +16,24 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY =
+    private final String secretKey =
             "my-super-secret-key-for-einsurance-application-2026";
 
     private final SecretKey key =
             Keys.hmacShaKeyFor(
-                    SECRET_KEY.getBytes(StandardCharsets.UTF_8)
+                    secretKey.getBytes(StandardCharsets.UTF_8)
             );
 
-    private final long jwtExpiration = 1000 * 60 * 60;
+    private final long jwtExpiration =
+            1000 * 60 * 60;
+
 
     public String generateToken(
             UserDetails userDetails,
             String role) {
 
-        Map<String, Object> claims = new HashMap<>();
+        Map<String, Object> claims =
+                new HashMap<>();
 
         claims.put("role", role);
 
@@ -48,7 +51,9 @@ public class JwtService {
                 .compact();
     }
 
-    public String extractUsername(String token) {
+
+    public String extractUsername(
+            String token) {
 
         return extractClaim(
                 token,
@@ -56,29 +61,39 @@ public class JwtService {
         );
     }
 
-    public String extractRole(String token) {
+
+    public String extractRole(
+            String token) {
 
         return extractAllClaims(token)
                 .get("role", String.class);
     }
 
+
     public boolean isTokenValid(
             String token,
             UserDetails userDetails) {
 
-        String username = extractUsername(token);
+        String username =
+                extractUsername(token);
 
-        return username.equals(userDetails.getUsername())
+        return username.equals(
+                userDetails.getUsername()
+        )
                 && !isTokenExpired(token);
     }
 
-    private boolean isTokenExpired(String token) {
+
+    private boolean isTokenExpired(
+            String token) {
 
         return extractExpiration(token)
                 .before(new Date());
     }
 
-    private Date extractExpiration(String token) {
+
+    private Date extractExpiration(
+            String token) {
 
         return extractClaim(
                 token,
@@ -86,16 +101,20 @@ public class JwtService {
         );
     }
 
+
     private <T> T extractClaim(
             String token,
             Function<Claims, T> resolver) {
 
-        Claims claims = extractAllClaims(token);
+        Claims claims =
+                extractAllClaims(token);
 
         return resolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+
+    private Claims extractAllClaims(
+            String token) {
 
         return Jwts.parser()
                 .verifyWith(key)

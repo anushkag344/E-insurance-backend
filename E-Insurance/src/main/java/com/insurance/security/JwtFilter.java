@@ -14,8 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-public class JwtFilter
-        extends OncePerRequestFilter {
+public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
@@ -38,8 +37,8 @@ public class JwtFilter
         String authHeader =
                 request.getHeader("Authorization");
 
-        String token = null;
         String username = null;
+        String token = null;
 
         if (authHeader != null &&
                 authHeader.startsWith("Bearer ")) {
@@ -50,7 +49,7 @@ public class JwtFilter
                 username =
                         jwtService.extractUsername(token);
             } catch (Exception e) {
-                // Invalid token
+                // Invalid JWT
             }
         }
 

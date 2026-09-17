@@ -1,9 +1,11 @@
 package com.insurance.security;
 
 import com.insurance.model.Admin;
+import com.insurance.model.Customer;
 import com.insurance.model.Employee;
 import com.insurance.model.InsuranceAgent;
 import com.insurance.repository.AdminRepository;
+import com.insurance.repository.CustomerRepository;
 import com.insurance.repository.EmployeeRepository;
 import com.insurance.repository.InsuranceAgentRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,32 +20,35 @@ public class CustomUserDetailsService
 
     private final AdminRepository adminRepository;
     private final EmployeeRepository employeeRepository;
-    private final InsuranceAgentRepository agentRepository;
+    private final InsuranceAgentRepository insuranceAgentRepository;
+    private final CustomerRepository customerRepository;
 
     public CustomUserDetailsService(
             AdminRepository adminRepository,
             EmployeeRepository employeeRepository,
-            InsuranceAgentRepository agentRepository) {
+            InsuranceAgentRepository insuranceAgentRepository,
+            CustomerRepository customerRepository) {
 
         this.adminRepository = adminRepository;
         this.employeeRepository = employeeRepository;
-        this.agentRepository = agentRepository;
+        this.insuranceAgentRepository = insuranceAgentRepository;
+        this.customerRepository = customerRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException {
 
-        // Search Admin
-        var admin = adminRepository.findByUsername(username);
+        var adminOptional =
+                adminRepository.findByUsername(username);
 
-        if (admin.isPresent()) {
+        if (adminOptional.isPresent()) {
 
-            Admin user = admin.get();
+            Admin admin = adminOptional.get();
 
             return User.builder()
-                    .username(user.getUsername())
-                    .password(user.getPassword())
+                    .username(admin.getUsername())
+                    .password(admin.getPassword())
                     .authorities(
                             Collections.singletonList(
                                     new SimpleGrantedAuthority(
@@ -54,38 +59,38 @@ public class CustomUserDetailsService
                     .build();
         }
 
-        // Search Employee
-        var employee =
+        var employeeOptional =
                 employeeRepository.findByUsername(username);
 
-        if (employee.isPresent()) {
+        if (employeeOptional.isPresent()) {
 
-            Employee user = employee.get();
+            Employee employee = employeeOptional.get();
 
             return User.builder()
-                    .username(user.getUsername())
-                    .password(user.getPassword())
+                    .username(employee.getUsername())
+                    .password(employee.getPassword())
                     .authorities(
                             Collections.singletonList(
                                     new SimpleGrantedAuthority(
-                                            "ROLE_" + user.getRole()
+                                            "ROLE_" + employee.getRole()
                                     )
                             )
                     )
                     .build();
         }
 
-        // Search Insurance Agent
-        var agent =
-                agentRepository.findByUsername(username);
 
-        if (agent.isPresent()) {
+        var agentOptional =
+                insuranceAgentRepository.findByUsername(username);
 
-            InsuranceAgent user = agent.get();
+        if (agentOptional.isPresent()) {
+
+            InsuranceAgent agent =
+                    agentOptional.get();
 
             return User.builder()
-                    .username(user.getUsername())
-                    .password(user.getPassword())
+                    .username(agent.getUsername())
+                    .password(agent.getPassword())
                     .authorities(
                             Collections.singletonList(
                                     new SimpleGrantedAuthority(
@@ -95,6 +100,27 @@ public class CustomUserDetailsService
                     )
                     .build();
         }
+        var customerOptional =
+                customerRepository.findByUsername(username);
+
+        if (customerOptional.isPresent()) {
+
+            Customer customer =
+                    customerOptional.get();
+
+            return User.builder()
+                    .username(customer.getUsername())
+                    .password(customer.getPassword())
+                    .authorities(
+                            Collections.singletonList(
+                                    new SimpleGrantedAuthority(
+                                            "ROLE_CUSTOMER"
+                                    )
+                            )
+                    )
+                    .build();
+        }
+
 
         throw new UsernameNotFoundException(
                 "User not found: " + username

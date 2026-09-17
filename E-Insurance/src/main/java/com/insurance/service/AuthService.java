@@ -1,18 +1,22 @@
 package com.insurance.service;
 
+import com.insurance.dto.CustomerRegisterRequestDTO;
 import com.insurance.dto.LoginRequestDTO;
 import com.insurance.dto.LoginResponseDTO;
 import com.insurance.dto.RegisterRequestDTO;
 import com.insurance.enums.Role;
 import com.insurance.model.Admin;
+import com.insurance.model.Customer;
 import com.insurance.model.Employee;
 import com.insurance.model.InsuranceAgent;
 import com.insurance.repository.AdminRepository;
+import com.insurance.repository.CustomerRepository;
 import com.insurance.repository.EmployeeRepository;
 import com.insurance.repository.InsuranceAgentRepository;
 import com.insurance.security.CustomUserDetailsService;
 import com.insurance.security.JwtService;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +26,8 @@ public class AuthService {
 
     private final AdminRepository adminRepository;
     private final EmployeeRepository employeeRepository;
-    private final InsuranceAgentRepository agentRepository;
+    private final InsuranceAgentRepository insuranceAgentRepository;
+    private final CustomerRepository customerRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -32,7 +37,8 @@ public class AuthService {
     public AuthService(
             AdminRepository adminRepository,
             EmployeeRepository employeeRepository,
-            InsuranceAgentRepository agentRepository,
+            InsuranceAgentRepository insuranceAgentRepository,
+            CustomerRepository customerRepository,
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
             CustomUserDetailsService userDetailsService,
@@ -40,7 +46,8 @@ public class AuthService {
 
         this.adminRepository = adminRepository;
         this.employeeRepository = employeeRepository;
-        this.agentRepository = agentRepository;
+        this.insuranceAgentRepository = insuranceAgentRepository;
+        this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
@@ -86,15 +93,7 @@ public class AuthService {
     public String register(
             RegisterRequestDTO request) {
 
-        if (request.getRole() == Role.CUSTOMER) {
-
-            throw new IllegalArgumentException(
-                    "Customer registration cannot be implemented with current schema because Customer table has no username/password fields."
-            );
-        }
-
         switch (request.getRole()) {
-
             case ADMIN:
 
                 if (adminRepository.existsByUsername(
@@ -102,6 +101,14 @@ public class AuthService {
 
                     throw new IllegalArgumentException(
                             "Admin username already exists"
+                    );
+                }
+
+                if (adminRepository.existsByEmail(
+                        request.getEmail())) {
+
+                    throw new IllegalArgumentException(
+                            "Admin email already exists"
                     );
                 }
 
@@ -120,7 +127,6 @@ public class AuthService {
 
                 return "Admin registered successfully";
 
-
             case EMPLOYEE:
 
                 if (employeeRepository.existsByUsername(
@@ -128,6 +134,14 @@ public class AuthService {
 
                     throw new IllegalArgumentException(
                             "Employee username already exists"
+                    );
+                }
+
+                if (employeeRepository.existsByEmail(
+                        request.getEmail())) {
+
+                    throw new IllegalArgumentException(
+                            "Employee email already exists"
                     );
                 }
 
@@ -146,15 +160,21 @@ public class AuthService {
                 employeeRepository.save(employee);
 
                 return "Employee registered successfully";
-
-
             case AGENT:
 
-                if (agentRepository.existsByUsername(
+                if (insuranceAgentRepository.existsByUsername(
                         request.getUsername())) {
 
                     throw new IllegalArgumentException(
                             "Agent username already exists"
+                    );
+                }
+
+                if (insuranceAgentRepository.existsByEmail(
+                        request.getEmail())) {
+
+                    throw new IllegalArgumentException(
+                            "Agent email already exists"
                     );
                 }
 
@@ -176,13 +196,56 @@ public class AuthService {
                                 )
                                 .build();
 
-                agentRepository.save(agent);
+                insuranceAgentRepository.save(agent);
 
                 return "Insurance Agent registered successfully";
+
+            case CUSTOMER:
+
+                throw new IllegalArgumentException(
+                        "Use customer registration API"
+                );
         }
 
         throw new IllegalArgumentException(
                 "Invalid role"
         );
+    }
+
+    public String registerCustomer(
+            CustomerRegisterRequestDTO request) {
+
+        if (customerRepository.existsByUsername(
+                request.getUsername())) {
+
+            throw new IllegalArgumentException(
+                    "Customer username already exists"
+            );
+        }
+
+        if (customerRepository.existsByEmail(
+                request.getEmail())) {
+
+            throw new IllegalArgumentException(
+                    "Customer email already exists"
+            );
+        }
+
+        Customer customer = Customer.builder()
+                .username(request.getUsername())
+                .password(
+                        passwordEncoder.encode(
+                                request.getPassword()
+                        )
+                )
+                .fullName(request.getFullName())
+                .email(request.getEmail())
+                .phone(request.getPhone())
+                .dateOfBirth(request.getDateOfBirth())
+                .build();
+
+        customerRepository.save(customer);
+
+        return "Customer registered successfully";
     }
 }

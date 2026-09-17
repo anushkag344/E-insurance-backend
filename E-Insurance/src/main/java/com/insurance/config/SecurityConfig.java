@@ -23,11 +23,13 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
+
     @Bean
     public PasswordEncoder passwordEncoder() {
 
         return new BCryptPasswordEncoder();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(
@@ -36,6 +38,7 @@ public class SecurityConfig {
 
         return configuration.getAuthenticationManager();
     }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -53,15 +56,18 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // Registration + Login
                         .requestMatchers(
                                 "/auth/**"
                         ).permitAll()
 
+                        // Swagger
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
 
+                        // Everything else requires JWT
                         .anyRequest()
                         .authenticated()
                 )
