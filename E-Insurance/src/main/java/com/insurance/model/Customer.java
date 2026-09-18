@@ -38,7 +38,6 @@ public class Customer {
     @Column(nullable = false)
     private LocalDate dateOfBirth;
 
-    // Many customers can belong to one agent
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "agent_id")
     private InsuranceAgent agent;

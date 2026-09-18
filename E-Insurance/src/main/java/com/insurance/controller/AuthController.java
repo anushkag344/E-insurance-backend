@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/auth")
 public class AuthController {
 
@@ -19,29 +20,33 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<String> register(
-            @Valid @RequestBody RegisterRequestDTO request) {
-
-        return ResponseEntity.ok(
-                authService.register(request)
-        );
-    }
-    @PostMapping("/register/customer")
+    @PostMapping({"/customer/register", "/customer/registar"})
     public ResponseEntity<String> registerCustomer(
-            @Valid @RequestBody
-            CustomerRegisterRequestDTO request) {
-
-        return ResponseEntity.ok(
-                authService.registerCustomer(request)
-        );
+            @Valid @RequestBody CustomerRegisterRequestDTO request) {
+        return ResponseEntity.ok(authService.registerCustomer(request));
     }
+
+    @PostMapping({"/employee/register", "/employee/registar"})
+    public ResponseEntity<String> registerEmployee(
+            @Valid @RequestBody RegisterRequestDTO request) {
+        return ResponseEntity.ok(authService.registerEmployee(request));
+    }
+
+    @PostMapping({"/agent/register", "/agent/registar"})
+    public ResponseEntity<String> registerAgent(
+            @Valid @RequestBody RegisterRequestDTO request) {
+        return ResponseEntity.ok(authService.registerAgent(request));
+    }
+
+    @PostMapping({"/admin/register", "/admin/registar"})
+    public ResponseEntity<String> registerAdmin(
+            @Valid @RequestBody RegisterRequestDTO request) {
+        return ResponseEntity.ok(authService.registerAdmin(request));
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(
             @Valid @RequestBody LoginRequestDTO request) {
-
-        return ResponseEntity.ok(
-                authService.login(request)
-        );
+        return ResponseEntity.ok(authService.login(request));
     }
 }

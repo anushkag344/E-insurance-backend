@@ -24,6 +24,5 @@ public class RegisterRequestDTO {
     @NotBlank(message = "Full name is required")
     private String fullName;
 
-    @NotNull(message = "Role is required")
     private Role role;
 }

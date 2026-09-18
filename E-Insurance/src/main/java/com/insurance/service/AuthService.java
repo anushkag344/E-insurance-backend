@@ -4,7 +4,6 @@ import com.insurance.dto.CustomerRegisterRequestDTO;
 import com.insurance.dto.LoginRequestDTO;
 import com.insurance.dto.LoginResponseDTO;
 import com.insurance.dto.RegisterRequestDTO;
-import com.insurance.enums.Role;
 import com.insurance.model.Admin;
 import com.insurance.model.Customer;
 import com.insurance.model.Employee;
@@ -54,9 +53,7 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
-    public LoginResponseDTO login(
-            LoginRequestDTO request) {
-
+    public LoginResponseDTO login(LoginRequestDTO request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
@@ -64,23 +61,15 @@ public class AuthService {
                 )
         );
 
-        UserDetails user =
-                userDetailsService.loadUserByUsername(
-                        request.getUsername()
-                );
+        UserDetails user = userDetailsService.loadUserByUsername(request.getUsername());
 
-        String role =
-                user.getAuthorities()
-                        .iterator()
-                        .next()
-                        .getAuthority()
-                        .replace("ROLE_", "");
+        String role = user.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority()
+                .replace("ROLE_", "");
 
-        String token =
-                jwtService.generateToken(
-                        user,
-                        role
-                );
+        String token = jwtService.generateToken(user, role);
 
         return LoginResponseDTO.builder()
                 .token(token)
@@ -90,154 +79,18 @@ public class AuthService {
                 .build();
     }
 
-    public String register(
-            RegisterRequestDTO request) {
-
-        switch (request.getRole()) {
-            case ADMIN:
-
-                if (adminRepository.existsByUsername(
-                        request.getUsername())) {
-
-                    throw new IllegalArgumentException(
-                            "Admin username already exists"
-                    );
-                }
-
-                if (adminRepository.existsByEmail(
-                        request.getEmail())) {
-
-                    throw new IllegalArgumentException(
-                            "Admin email already exists"
-                    );
-                }
-
-                Admin admin = Admin.builder()
-                        .username(request.getUsername())
-                        .password(
-                                passwordEncoder.encode(
-                                        request.getPassword()
-                                )
-                        )
-                        .email(request.getEmail())
-                        .fullName(request.getFullName())
-                        .build();
-
-                adminRepository.save(admin);
-
-                return "Admin registered successfully";
-
-            case EMPLOYEE:
-
-                if (employeeRepository.existsByUsername(
-                        request.getUsername())) {
-
-                    throw new IllegalArgumentException(
-                            "Employee username already exists"
-                    );
-                }
-
-                if (employeeRepository.existsByEmail(
-                        request.getEmail())) {
-
-                    throw new IllegalArgumentException(
-                            "Employee email already exists"
-                    );
-                }
-
-                Employee employee = Employee.builder()
-                        .username(request.getUsername())
-                        .password(
-                                passwordEncoder.encode(
-                                        request.getPassword()
-                                )
-                        )
-                        .email(request.getEmail())
-                        .fullName(request.getFullName())
-                        .role("EMPLOYEE")
-                        .build();
-
-                employeeRepository.save(employee);
-
-                return "Employee registered successfully";
-            case AGENT:
-
-                if (insuranceAgentRepository.existsByUsername(
-                        request.getUsername())) {
-
-                    throw new IllegalArgumentException(
-                            "Agent username already exists"
-                    );
-                }
-
-                if (insuranceAgentRepository.existsByEmail(
-                        request.getEmail())) {
-
-                    throw new IllegalArgumentException(
-                            "Agent email already exists"
-                    );
-                }
-
-                InsuranceAgent agent =
-                        InsuranceAgent.builder()
-                                .username(
-                                        request.getUsername()
-                                )
-                                .password(
-                                        passwordEncoder.encode(
-                                                request.getPassword()
-                                        )
-                                )
-                                .email(
-                                        request.getEmail()
-                                )
-                                .fullName(
-                                        request.getFullName()
-                                )
-                                .build();
-
-                insuranceAgentRepository.save(agent);
-
-                return "Insurance Agent registered successfully";
-
-            case CUSTOMER:
-
-                throw new IllegalArgumentException(
-                        "Use customer registration API"
-                );
+    public String registerCustomer(CustomerRegisterRequestDTO request) {
+        if (customerRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Customer username already exists");
         }
 
-        throw new IllegalArgumentException(
-                "Invalid role"
-        );
-    }
-
-    public String registerCustomer(
-            CustomerRegisterRequestDTO request) {
-
-        if (customerRepository.existsByUsername(
-                request.getUsername())) {
-
-            throw new IllegalArgumentException(
-                    "Customer username already exists"
-            );
-        }
-
-        if (customerRepository.existsByEmail(
-                request.getEmail())) {
-
-            throw new IllegalArgumentException(
-                    "Customer email already exists"
-            );
+        if (customerRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Customer email already exists");
         }
 
         Customer customer = Customer.builder()
                 .username(request.getUsername())
-                .password(
-                        passwordEncoder.encode(
-                                request.getPassword()
-                        )
-                )
+                .password(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .phone(request.getPhone())
@@ -247,5 +100,69 @@ public class AuthService {
         customerRepository.save(customer);
 
         return "Customer registered successfully";
+    }
+
+    public String registerEmployee(RegisterRequestDTO request) {
+        if (employeeRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Employee username already exists");
+        }
+
+        if (employeeRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Employee email already exists");
+        }
+
+        Employee employee = Employee.builder()
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .email(request.getEmail())
+                .fullName(request.getFullName())
+                .role(request.getRole() != null ? request.getRole().name() : "EMPLOYEE")
+                .build();
+
+        employeeRepository.save(employee);
+
+        return "Employee registered successfully";
+    }
+
+    public String registerAgent(RegisterRequestDTO request) {
+        if (insuranceAgentRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Agent username already exists");
+        }
+
+        if (insuranceAgentRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Agent email already exists");
+        }
+
+        InsuranceAgent agent = InsuranceAgent.builder()
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .email(request.getEmail())
+                .fullName(request.getFullName())
+                .build();
+
+        insuranceAgentRepository.save(agent);
+
+        return "Insurance Agent registered successfully";
+    }
+
+    public String registerAdmin(RegisterRequestDTO request) {
+        if (adminRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Admin username already exists");
+        }
+
+        if (adminRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Admin email already exists");
+        }
+
+        Admin admin = Admin.builder()
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .email(request.getEmail())
+                .fullName(request.getFullName())
+                .build();
+
+        adminRepository.save(admin);
+
+        return "Admin registered successfully";
     }
 }

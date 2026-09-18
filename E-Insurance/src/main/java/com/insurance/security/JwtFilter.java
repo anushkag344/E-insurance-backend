@@ -40,34 +40,20 @@ public class JwtFilter extends OncePerRequestFilter {
         String username = null;
         String token = null;
 
-        if (authHeader != null &&
-                authHeader.startsWith("Bearer ")) {
-
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-
             try {
-                username =
-                        jwtService.extractUsername(token);
+                username = jwtService.extractUsername(token);
             } catch (Exception e) {
-                // Invalid JWT
+                username = null;
             }
         }
 
-        if (username != null &&
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication() == null) {
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            UserDetails userDetails =
-                    userDetailsService
-                            .loadUserByUsername(username);
-
-            if (jwtService.isTokenValid(
-                    token,
-                    userDetails)) {
-
-                UsernamePasswordAuthenticationToken
-                        authentication =
+            if (jwtService.isTokenValid(token, userDetails)) {
+                UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
                                 null,
@@ -75,21 +61,13 @@ public class JwtFilter extends OncePerRequestFilter {
                         );
 
                 authentication.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
+                        new WebAuthenticationDetailsSource().buildDetails(request)
                 );
 
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(
-                                authentication
-                        );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
-
-        filterChain.doFilter(
-                request,
-                response
-        );
+        
+        filterChain.doFilter(request, response);
     }
 }
