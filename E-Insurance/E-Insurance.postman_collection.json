@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "E-Insurance Management System",
-    "description": "Postman Collection for E-Insurance Backend covering Use Cases 1 to 4: Authentication, View Policies, Admin User/Bank Management, and Policy Purchase.",
+    "description": "Postman Collection for E-Insurance Backend covering Use Cases 1 to 6: Authentication, View Policies, Admin User/Bank Management, Policy Purchase, Premium Calculation, and Commission Calculation.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -17,6 +17,11 @@
     },
     {
       "key": "customerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "agentToken",
       "value": "",
       "type": "string"
     }
@@ -125,6 +130,24 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"customer1\",\n  \"password\": \"Customer@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "1.7 Login Agent (Save Token to agentToken)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"agent1\",\n  \"password\": \"Agent@123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
@@ -465,6 +488,120 @@
               "raw": "{{baseUrl}}/api/admin/customers/1/payments",
               "host": ["{{baseUrl}}"],
               "path": ["api", "admin", "customers", "1", "payments"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Use Case 5 - Premium Calculation",
+      "item": [
+        {
+          "name": "7.1 Calculate Annual Premium (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sumAssured\": 500000.00,\n  \"age\": 28,\n  \"termYears\": 10,\n  \"paymentFrequency\": \"ANNUAL\",\n  \"rateOfInterest\": 6.50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/calculator/premium",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "calculator", "premium"]
+            }
+          }
+        },
+        {
+          "name": "7.2 Calculate Monthly Premium with Scheme (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schemeId\": 1,\n  \"sumAssured\": 1000000.00,\n  \"age\": 35,\n  \"termYears\": 15,\n  \"paymentFrequency\": \"MONTHLY\",\n  \"rateOfInterest\": 7.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/premium-calculator",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "premium-calculator"]
+            }
+          }
+        },
+        {
+          "name": "7.3 Calculate Quarterly Premium (Agent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{agentToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sumAssured\": 300000.00,\n  \"age\": 42,\n  \"termYears\": 20,\n  \"paymentFrequency\": \"QUARTERLY\",\n  \"rateOfInterest\": 6.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/calculator/premium",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "calculator", "premium"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Use Case 6 - Commission Calculation (Admin)",
+      "item": [
+        {
+          "name": "8.1 List Agents for Commission Calculator (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/commission-calculator/agents",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "commission-calculator", "agents"]
+            }
+          }
+        },
+        {
+          "name": "8.2 Calculate Agent Commission by Agent ID (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/commission-calculator/agents/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "commission-calculator", "agents", "1"]
+            }
+          }
+        },
+        {
+          "name": "8.3 Simulate Agent Commission with Custom Rate (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agentId\": 1,\n  \"commissionRate\": 7.50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/commission-calculator/calculate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "commission-calculator", "calculate"]
             }
           }
         }

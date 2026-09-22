@@ -11,4 +11,5 @@ public interface PolicyRepository extends JpaRepository<Policy, Integer> {
     List<Policy> findByCustomerCustomerId(Integer customerId);
     List<Policy> findByCustomerUsername(String username);
     List<Policy> findBySchemeSchemeId(Integer schemeId);
+    List<Policy> findByCustomerAgentAgentId(Integer agentId);
 }

@@ -88,6 +88,11 @@ public class AuthService {
             throw new IllegalArgumentException("Customer email already exists");
         }
 
+        InsuranceAgent agent = null;
+        if (request.getAgentId() != null) {
+            agent = insuranceAgentRepository.findById(request.getAgentId()).orElse(null);
+        }
+
         Customer customer = Customer.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -95,6 +100,7 @@ public class AuthService {
                 .email(request.getEmail())
                 .phone(request.getPhone())
                 .dateOfBirth(request.getDateOfBirth())
+                .agent(agent)
                 .build();
 
         customerRepository.save(customer);

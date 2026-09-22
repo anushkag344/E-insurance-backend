@@ -72,6 +72,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/calculator/**").hasAnyRole("CUSTOMER", "AGENT", "ADMIN", "EMPLOYEE")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

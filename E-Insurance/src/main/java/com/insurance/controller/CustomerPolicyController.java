@@ -5,7 +5,10 @@ import com.insurance.dto.PaymentResponseDTO;
 import com.insurance.dto.PolicyPurchaseRequestDTO;
 import com.insurance.dto.PolicyResponseDTO;
 import com.insurance.dto.SchemeDTO;
+import com.insurance.dto.PremiumCalculateRequestDTO;
+import com.insurance.dto.PremiumCalculateResponseDTO;
 import com.insurance.service.PolicyService;
+import com.insurance.service.PremiumCalculatorService;
 import com.insurance.service.SchemeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -22,17 +25,22 @@ import java.util.List;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/customer")
-@Tag(name = "Customer Operations", description = "Endpoints for Customer policy purchase and policy/payment viewing (Use Cases 2 and 4)")
+@Tag(name = "Customer Operations", description = "Endpoints for Customer policy purchase, premium calculation, and policy/payment viewing (Use Cases 2, 4, and 5)")
 @SecurityRequirement(name = "bearerAuth")
 @PreAuthorize("hasRole('CUSTOMER')")
 public class CustomerPolicyController {
 
     private final PolicyService policyService;
     private final SchemeService schemeService;
+    private final PremiumCalculatorService premiumCalculatorService;
 
-    public CustomerPolicyController(PolicyService policyService, SchemeService schemeService) {
+    public CustomerPolicyController(
+            PolicyService policyService,
+            SchemeService schemeService,
+            PremiumCalculatorService premiumCalculatorService) {
         this.policyService = policyService;
         this.schemeService = schemeService;
+        this.premiumCalculatorService = premiumCalculatorService;
     }
 
     @GetMapping("/policies")
@@ -69,6 +77,14 @@ public class CustomerPolicyController {
                 ApiResponse.ok("Policy purchased successfully", policy),
                 HttpStatus.CREATED
         );
+    }
+
+    @PostMapping("/premium-calculator")
+    @Operation(summary = "UC5: Premium Calculator (Customer)", description = "Customer calculates estimated premium and maturity benefit for a scheme.")
+    public ResponseEntity<ApiResponse<PremiumCalculateResponseDTO>> calculatePremium(
+            @Valid @RequestBody PremiumCalculateRequestDTO request) {
+        PremiumCalculateResponseDTO response = premiumCalculatorService.calculatePremium(request);
+        return ResponseEntity.ok(ApiResponse.ok("Premium calculated successfully", response));
     }
 }
 
